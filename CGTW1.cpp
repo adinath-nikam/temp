@@ -1,74 +1,76 @@
-#include< glut.h>
 #include<stdio.h>
-int x,y; 
-int rFlag=0;
-void draw_pixel(float x1,float y1)
+#include<math.h>
+#include<iostream>
+#include<glut.h>
+
+int xstart, ystart, xend, yend;
+void init()
 {
-glColor3f(0.0,0.0,1.0);
-glPointSize(5.0);
-glBegin(GL_POINTS);
-glVertex2f(x1,y1);
-glEnd();
+	gluOrtho2D(0, 500, 0, 500);
 }
-void triangle()
-{ glColor3f(1.0,0.0,0.0);
-glBegin(GL_POLYGON);
-glVertex2f(50,50);
-glVertex2f(25,25);
-glVertex2f(75,25);
-glEnd(); }
-float th=0.0;
-float trX=0.0,trY=0.0;
-void display()
-{ 
+
+void draw_pixel(int x, int y)
+{
+	glColor3f(1, 0, 0);
+	glBegin(GL_POINTS);
+	glVertex2i(x, y);
+	glEnd();
+	glFlush();
+}
+
+void LineBres(int xstart, int ystart, int xend, int yend)
+{
+	int dx = abs(xend - xstart);
+	int dy = abs(yend - ystart);
+	int twody = 2 * dy, twodyminusdx = 2 * (dy - dx);
+	int p = 2 * dy - dx;
+	int x, y;
+	if (xstart > xend)
+	{
+		x = xend;
+		y = yend;
+		xend = xstart;
+	}
+	else
+	{
+		x = xstart;
+		y = ystart;
+
+	}
+	draw_pixel(x, y);
+	while (x < xend)
+	{
+		x++;
+		if (p < 0)
+			p += twody;
+		else
+		{
+			y++;
+			p += twodyminusdx;
+		}
+		draw_pixel(x, y);
+	}
+}
+
+void Display()
+{
 	glClear(GL_COLOR_BUFFER_BIT);
-glLoadIdentity();
-if(rFlag==1) //Rotate Around origin
-{ 
-	trX=0.0; trY=0.0; th+=0.1; 
-	draw_pixel(0.0,0.0); 
+	glClearColor(0, 0, 0, 1);
+	LineBres(xstart, ystart, xend, yend);
+	glEnd();
+	glFlush();
 }
-if(rFlag==2) //Rotate Around Fixed Point
-{ 
-	trX=x; trY=y; th+=0.1; draw_pixel(x,y);
-}
- glTranslatef(trX,trY,0.0);
-glRotatef(th,0.0,0.0,1.0);
-glTranslatef(-trX,-trY,0.0);
-triangle();
-glutPostRedisplay();
-glutSwapBuffers();
-}
-void myInit()
-{ 
-	glClearColor(0.0,0.0,0.0,1.0);
-glMatrixMode(GL_PROJECTION);
-glLoadIdentity();
-gluOrtho2D(-500.0, 500.0, -500.0, 500.0);
-glMatrixMode(GL_MODELVIEW);
-}
-void rotateMenu (int option)
-{ 
-	if(option==1)
-rFlag=1; if(option==2)
-rFlag=2; if(option==3)
-rFlag=3;
-}
-void main(int argc, char **argv)
+
+int main(int argc, char** argv)
 {
-printf( "Enter Fixed Points (x,y) for Roration: \n");
-scanf("%d%d", &x, &y);
-glutInit(&argc, argv);
-glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB);
-glutInitWindowSize(500, 500);
-glutInitWindowPosition(0, 0);
-glutCreateWindow("Create and Rotate Triangle");
-myInit();
-glutDisplayFunc(display);
-glutCreateMenu(rotateMenu);
-glutAddMenuEntry("Rotate around ORIGIN",1);
-glutAddMenuEntry("Rotate around FIXED POINT",2);
-glutAddMenuEntry("Stop Rotation",3);
-glutAttachMenu(GLUT_RIGHT_BUTTON);
-glutMainLoop();
+	printf("Enter (x1, y1, x2, y2)\n");
+	scanf("%d%d%d%d", &xstart, &ystart, &xend, &yend);
+	glutInit(&argc, argv);
+	glutInitWindowPosition(50, 50);
+	glutInitWindowSize(500, 500);
+	glutCreateWindow("Bresenham's Line Drawing");
+	init();
+	glutDisplayFunc(Display);
+	glutMainLoop();
+	return 0;
 }
